@@ -42,16 +42,30 @@
 	if( (self=[super init]) ) {
 		
 		// create and initialize a Label
-		CCLabelTTF *label = [CCLabelTTF labelWithString:@"Hello World" fontName:@"Marker Felt" fontSize:64];
+//		CCLabelTTF *label = [CCLabelTTF labelWithString:@"Hello World" fontName:@"Marker Felt" fontSize:64];
+		// position the label on the center of the screen
+        //		label.position =  ccp( size.width /2 , size.height/2 );
 
 		// ask director for the window size
 		CGSize size = [[CCDirector sharedDirector] winSize];
-	
-		// position the label on the center of the screen
-		label.position =  ccp( size.width /2 , size.height/2 );
-		
-		// add the label as a child to this Layer
-		[self addChild: label];
+
+        
+        CCSprite *background = [CCSprite spriteWithFile:@"background.png"];
+        [background setScale:size.width / [background contentSize].width*2];
+        [self addChild:background];
+        
+        CCSprite *gameWheel = [CCSprite new];
+        CCSprite *wheel = [CCSprite spriteWithFile:@"wheel.png"];
+        [gameWheel setScale:size.width / [wheel contentSize].width];
+        [gameWheel setPosition:ccp(size.width/2, 0)];
+        [gameWheel addChild: wheel];
+        CCSprite *cover = [CCSprite spriteWithFile:@"cover.png"];
+        [gameWheel addChild:cover];
+        [wheel runAction:[CCRepeatForever actionWithAction:[CCRotateBy actionWithDuration:8.0 angle:-360]]];
+
+        [self addChild:gameWheel];
+
+
 		
 		
 		
@@ -63,39 +77,17 @@
 		[CCMenuItemFont setFontSize:28];
 		
 		// Achievement Menu Item using blocks
-		CCMenuItem *itemAchievement = [CCMenuItemFont itemWithString:@"Achievements" block:^(id sender) {
+        CCMenuItem *sphero = [CCMenuItemImage itemWithNormalImage:@"sphero.png" selectedImage:@"sphero.png" block:^(id sender) {
+            AppController *app = (AppController*) [[UIApplication sharedApplication] delegate];
+            [app setupRobotConnection];
 			
-			
-			GKAchievementViewController *achivementViewController = [[GKAchievementViewController alloc] init];
-			achivementViewController.achievementDelegate = self;
-			
-			AppController *app = (AppController*) [[UIApplication sharedApplication] delegate];
-			
-			[[app navController] presentModalViewController:achivementViewController animated:YES];
-			
-			[achivementViewController release];
-		}
-									   ];
-
-		// Leaderboard Menu Item using blocks
-		CCMenuItem *itemLeaderboard = [CCMenuItemFont itemWithString:@"Leaderboard" block:^(id sender) {
-			
-			
-			GKLeaderboardViewController *leaderboardViewController = [[GKLeaderboardViewController alloc] init];
-			leaderboardViewController.leaderboardDelegate = self;
-			
-			AppController *app = (AppController*) [[UIApplication sharedApplication] delegate];
-			
-			[[app navController] presentModalViewController:leaderboardViewController animated:YES];
-			
-			[leaderboardViewController release];
-		}
-									   ];
+        }];
+        [sphero runAction:[CCRepeatForever actionWithAction:[CCJumpBy actionWithDuration:1.21 position:ccp(0,00) height:40.0 jumps:1]]];
 		
-		CCMenu *menu = [CCMenu menuWithItems:itemAchievement, itemLeaderboard, nil];
+		CCMenu *menu = [CCMenu menuWithItems:sphero, nil];
 		
 		[menu alignItemsHorizontallyWithPadding:20];
-		[menu setPosition:ccp( size.width/2, size.height/2 - 50)];
+		[menu setPosition:ccp( size.width/5, size.height*3/4 + 10)];
 		
 		// Add the menu to the layer
 		[self addChild:menu];

@@ -133,6 +133,15 @@
 		FAB8DA6F16FFA25E00A7DDCD /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FAB8DA6E16FFA25E00A7DDCD /* AppDelegate.m */; };
 		FAB8DA7216FFA25E00A7DDCD /* HelloWorldLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = FAB8DA7116FFA25E00A7DDCD /* HelloWorldLayer.m */; };
 		FAB8DA7516FFA25E00A7DDCD /* IntroLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = FAB8DA7416FFA25E00A7DDCD /* IntroLayer.m */; };
+		FAB8DA7C16FFA63C00A7DDCD /* background.png in Resources */ = {isa = PBXBuildFile; fileRef = FAB8DA7B16FFA63C00A7DDCD /* background.png */; };
+		FAB8DA8016FFADF500A7DDCD /* RobotKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAB8DA7D16FFADF500A7DDCD /* RobotKit.framework */; };
+		FAB8DA8116FFADF500A7DDCD /* RobotUIKit.bundle in Resources */ = {isa = PBXBuildFile; fileRef = FAB8DA7E16FFADF500A7DDCD /* RobotUIKit.bundle */; };
+		FAB8DA8216FFADF500A7DDCD /* RobotUIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAB8DA7F16FFADF500A7DDCD /* RobotUIKit.framework */; };
+		FAB8DA8416FFAE2800A7DDCD /* ExternalAccessory.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAB8DA8316FFAE2800A7DDCD /* ExternalAccessory.framework */; };
+		FAB8DA8616FFAE3300A7DDCD /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAB8DA8516FFAE3300A7DDCD /* CoreMotion.framework */; };
+		FAFCCCDA1702249C005530D6 /* wheel.png in Resources */ = {isa = PBXBuildFile; fileRef = FAFCCCD91702249C005530D6 /* wheel.png */; };
+		FAFCCCDC17022926005530D6 /* cover.png in Resources */ = {isa = PBXBuildFile; fileRef = FAFCCCDB17022926005530D6 /* cover.png */; };
+		FAFCCCDE1702396A005530D6 /* sphero.png in Resources */ = {isa = PBXBuildFile; fileRef = FAFCCCDD1702396A005530D6 /* sphero.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -398,6 +407,15 @@
 		FAB8DA7116FFA25E00A7DDCD /* HelloWorldLayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HelloWorldLayer.m; sourceTree = "<group>"; };
 		FAB8DA7316FFA25E00A7DDCD /* IntroLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IntroLayer.h; sourceTree = "<group>"; };
 		FAB8DA7416FFA25E00A7DDCD /* IntroLayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IntroLayer.m; sourceTree = "<group>"; };
+		FAB8DA7B16FFA63C00A7DDCD /* background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = background.png; path = Resources/background.png; sourceTree = "<group>"; };
+		FAB8DA7D16FFADF500A7DDCD /* RobotKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = RobotKit.framework; sourceTree = "<group>"; };
+		FAB8DA7E16FFADF500A7DDCD /* RobotUIKit.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = RobotUIKit.bundle; sourceTree = "<group>"; };
+		FAB8DA7F16FFADF500A7DDCD /* RobotUIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = RobotUIKit.framework; sourceTree = "<group>"; };
+		FAB8DA8316FFAE2800A7DDCD /* ExternalAccessory.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExternalAccessory.framework; path = System/Library/Frameworks/ExternalAccessory.framework; sourceTree = SDKROOT; };
+		FAB8DA8516FFAE3300A7DDCD /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
+		FAFCCCD91702249C005530D6 /* wheel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = wheel.png; path = Resources/wheel.png; sourceTree = "<group>"; };
+		FAFCCCDB17022926005530D6 /* cover.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = cover.png; path = Resources/cover.png; sourceTree = "<group>"; };
+		FAFCCCDD1702396A005530D6 /* sphero.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = sphero.png; path = Resources/sphero.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -405,6 +423,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FAB8DA8616FFAE3300A7DDCD /* CoreMotion.framework in Frameworks */,
+				FAB8DA8416FFAE2800A7DDCD /* ExternalAccessory.framework in Frameworks */,
 				FAB8D8E416FFA25B00A7DDCD /* QuartzCore.framework in Frameworks */,
 				FAB8D8E616FFA25B00A7DDCD /* OpenGLES.framework in Frameworks */,
 				FAB8D8E816FFA25B00A7DDCD /* OpenAL.framework in Frameworks */,
@@ -414,6 +434,8 @@
 				FAB8D8F016FFA25B00A7DDCD /* Foundation.framework in Frameworks */,
 				FAB8D8F216FFA25B00A7DDCD /* CoreGraphics.framework in Frameworks */,
 				FAB8D8F416FFA25B00A7DDCD /* GameKit.framework in Frameworks */,
+				FAB8DA8016FFADF500A7DDCD /* RobotKit.framework in Frameworks */,
+				FAB8DA8216FFADF500A7DDCD /* RobotUIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -440,6 +462,11 @@
 		FAB8D8E216FFA25B00A7DDCD /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FAB8DA8516FFAE3300A7DDCD /* CoreMotion.framework */,
+				FAB8DA8316FFAE2800A7DDCD /* ExternalAccessory.framework */,
+				FAB8DA7D16FFADF500A7DDCD /* RobotKit.framework */,
+				FAB8DA7E16FFADF500A7DDCD /* RobotUIKit.bundle */,
+				FAB8DA7F16FFADF500A7DDCD /* RobotUIKit.framework */,
 				FAB8D8E316FFA25B00A7DDCD /* QuartzCore.framework */,
 				FAB8D8E516FFA25B00A7DDCD /* OpenGLES.framework */,
 				FAB8D8E716FFA25B00A7DDCD /* OpenAL.framework */,
@@ -472,6 +499,10 @@
 		FAB8D8F616FFA25B00A7DDCD /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				FAFCCCDD1702396A005530D6 /* sphero.png */,
+				FAFCCCDB17022926005530D6 /* cover.png */,
+				FAFCCCD91702249C005530D6 /* wheel.png */,
+				FAB8DA7B16FFA63C00A7DDCD /* background.png */,
 				FAB8D8F716FFA25B00A7DDCD /* Default.png */,
 				FAB8D8F916FFA25B00A7DDCD /* Default-Landscape~ipad.png */,
 				FAB8D8FB16FFA25B00A7DDCD /* fps_images.png */,
@@ -858,7 +889,7 @@
 		FAB8D8D616FFA25B00A7DDCD /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0450;
+				LastUpgradeCheck = 0460;
 			};
 			buildConfigurationList = FAB8D8D916FFA25B00A7DDCD /* Build configuration list for PBXProject "shakeit" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -895,6 +926,11 @@
 				FAB8D90C16FFA25B00A7DDCD /* Icon@2x.png in Resources */,
 				FAB8D90F16FFA25B00A7DDCD /* iTunesArtwork in Resources */,
 				FAB8DA4D16FFA25D00A7DDCD /* ChangeLog in Resources */,
+				FAB8DA7C16FFA63C00A7DDCD /* background.png in Resources */,
+				FAB8DA8116FFADF500A7DDCD /* RobotUIKit.bundle in Resources */,
+				FAFCCCDA1702249C005530D6 /* wheel.png in Resources */,
+				FAFCCCDC17022926005530D6 /* cover.png in Resources */,
+				FAFCCCDE1702396A005530D6 /* sphero.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1018,7 +1054,12 @@
 		FAB8DA7616FFA25E00A7DDCD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = armv7;
+				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -1027,10 +1068,11 @@
 					"COCOS2D_DEBUG=1",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -1039,17 +1081,23 @@
 		FAB8DA7716FFA25E00A7DDCD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = armv7;
+				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					NDEBUG,
 					"NS_BLOCK_ASSERTIONS=1",
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -1059,7 +1107,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LIBRARY = "libstdc++";
 				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = shakeit/Prefix.pch;
@@ -1068,6 +1121,9 @@
 				OTHER_LDFLAGS = (
 					"-lz",
 					"-ObjC",
+					"-all_load",
+					"-lstdc++",
+					"-lsqlite3",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
@@ -1078,7 +1134,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LIBRARY = "libstdc++";
 				COPY_PHASE_STRIP = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = shakeit/Prefix.pch;
 				HEADER_SEARCH_PATHS = "\"shakeit/libs/kazmath/include\"";
@@ -1086,6 +1147,9 @@
 				OTHER_LDFLAGS = (
 					"-lz",
 					"-ObjC",
+					"-all_load",
+					"-lstdc++",
+					"-lsqlite3",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALIDATE_PRODUCT = YES;
@@ -1112,6 +1176,7 @@
 				FAB8DA7A16FFA25E00A7DDCD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

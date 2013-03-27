@@ -10,6 +10,16 @@
 
 #import "AppDelegate.h"
 #import "IntroLayer.h"
+#import "RobotKit/RobotKit.h"
+
+#define TOTAL_PACKET_COUNT 200
+#define PACKET_THRESHOLD 50
+
+#define SAMPLES_PER_SECOND 10
+#define SHAKING_THRESHOLD 2
+#define TOSSING_THRESHOLD 2
+#define COLOR_COOLDOWN 2
+
 
 @implementation AppController
 
@@ -17,6 +27,12 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    /*Register for application lifecycle notifications so we known when to connect and disconnect from the robot*/
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillResignActive:) name:UIApplicationWillResignActiveNotification object:nil];
+    
+    robotOnline = NO;
+
 	// Create the main window
 	window_ = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 
@@ -100,13 +116,27 @@
 // getting a call, pause the game
 -(void) applicationWillResignActive:(UIApplication *)application
 {
-	if( [navController_ visibleViewController] == director_ )
+    /*When the application is entering the background we need to close the connection to the robot*/
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:RKDeviceConnectionOnlineNotification object:nil];
+    [RKRGBLEDOutputCommand sendCommandWithRed:0.0 green:0.0 blue:0.0];
+    [RKSetDataStreamingCommand sendCommandWithSampleRateDivisor:0
+                                                   packetFrames:0
+                                                     sensorMask:RKDataStreamingMaskOff
+                                                    packetCount:0];
+    [[RKDeviceMessenger sharedMessenger] removeDataStreamingObserver:self];
+    [RKStabilizationCommand sendCommandWithState:RKStabilizationStateOn];
+    [[RKRobotProvider sharedRobotProvider] closeRobotConnection];
+    robotOnline = NO;
+    
+    if( [navController_ visibleViewController] == director_ )
 		[director_ pause];
 }
 
 // call got rejected
 -(void) applicationDidBecomeActive:(UIApplication *)application
 {
+    [self setupRobotConnection];
+
 	if( [navController_ visibleViewController] == director_ )
 		[director_ resume];
 }
@@ -148,5 +178,159 @@
 
 	[super dealloc];
 }
+
+// Sphero functions
+-(void)setupRobotConnection {
+    NSLog(@"setupRobotConnection");
+    robotOnline = NO;
+    /*Try to connect to the robot*/
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRobotOnline) name:RKDeviceConnectionOnlineNotification object:nil];
+    if ([[RKRobotProvider sharedRobotProvider] isRobotUnderControl]) {
+        [[RKRobotProvider sharedRobotProvider] openRobotConnection];
+    }
+}
+
+- (void)handleRobotOnline {
+    /*The robot is now online, we can begin sending commands*/
+    if(!robotOnline) {
+        
+        [RKSetDataStreamingCommand sendCommandStopStreaming];
+        // Start streaming sensor data
+        ////First turn off stabilization so the drive mechanism does not move.
+        [RKStabilizationCommand sendCommandWithState:RKStabilizationStateOff];
+        // Turn on the Back LED for reference
+        [RKBackLEDOutputCommand sendCommandWithBrightness:1.0f];
+        
+        [self sendSetDataStreamingCommand];
+        
+        ////Register for asynchronise data streaming packets
+        [[RKDeviceMessenger sharedMessenger] addDataStreamingObserver:self selector:@selector(handleAsyncData:)];
+    }
+    robotOnline = YES;
+}
+
+-(void)sendSetDataStreamingCommand {
+    
+    // Requesting the Accelerometer X, Y, and Z filtered (in Gs)
+    //            the IMU Angles roll, pitch, and yaw (in degrees)
+    //            the Quaternion data q0, q1, q2, and q3 (in 1/10000) of a Q
+    RKDataStreamingMask mask =  RKDataStreamingMaskAccelerometerFilteredAll |
+    RKDataStreamingMaskIMUAnglesFilteredAll   |
+    RKDataStreamingMaskQuaternionAll;
+    
+    // Note: If your ball has Firmware < 1.20 then these Quaternions
+    //       will simply show up as zeros.
+    
+    // Sphero samples this data at 400 Hz.  The divisor sets the sample
+    // rate you want it to store frames of data.  In this case 400Hz/40 = 10Hz
+    uint16_t divisor = 1200 / SAMPLES_PER_SECOND;
+    
+    // Packet frames is the number of frames Sphero will store before it sends
+    // an async data packet to the iOS device
+    uint16_t packetFrames = 1;
+    
+    // Count is the number of async data packets Sphero will send you before
+    // it stops.  Set a count of 0 for infinite data streaming.
+    uint8_t count = 0;
+    
+    // Send command to Sphero
+    [RKSetDataStreamingCommand sendCommandWithSampleRateDivisor:divisor
+                                                   packetFrames:packetFrames
+                                                     sensorMask:mask
+                                                    packetCount:count];
+    
+}
+
+- (void)handleAsyncData:(RKDeviceAsyncData *)asyncData
+{
+    // Need to check which type of async data is received as this method will be called for
+    // data streaming packets and sleep notification packets. We are going to ingnore the sleep
+    if ([asyncData isKindOfClass:[RKDeviceSensorsAsyncData class]]) {
+        
+//        // Check to see if we need to request more packets
+//        packetCounter++;
+//        if( packetCounter > (TOTAL_PACKET_COUNT-PACKET_THRESHOLD)) {
+//            [self startLocatorStreaming];
+//        }
+        
+        //    // Received sensor data, so display it to the user.
+        RKDeviceSensorsAsyncData *sensorsAsyncData = (RKDeviceSensorsAsyncData *)asyncData;
+        RKDeviceSensorsData *sensorsData = [sensorsAsyncData.dataFrames lastObject];
+        RKAccelerometerData *accelerometerData = sensorsData.accelerometerData;
+        RKAttitudeData *attitudeData = sensorsData.attitudeData;
+        //    RKQuaternionData *quaternionData = sensorsData.quaternionData;
+        //    RKLocatorData *locatorData = sensorsData.locatorData;
+        //
+        //    NSString *xAcceleration = [NSString stringWithFormat:@"%.6f", accelerometerData.acceleration.x];
+        //    NSString *yAcceleration = [NSString stringWithFormat:@"%.6f", accelerometerData.acceleration.y];
+        //    NSString *zValue = [NSString stringWithFormat:@"%.6f", accelerometerData.acceleration.z];
+        //    NSString *pitchValue = [NSString stringWithFormat:@"%.0f", attitudeData.pitch];
+        //    NSString *rollValue = [NSString stringWithFormat:@"%.0f", attitudeData.roll];
+        //    NSString *yawValue = [NSString stringWithFormat:@"%.0f", attitudeData.yaw];
+        //    NSString *q0Value = [NSString stringWithFormat:@"%.6f", quaternionData.quaternions.q0];
+        //    NSString *q1Value = [NSString stringWithFormat:@"%.6f", quaternionData.quaternions.q1];
+        //    NSString *q2Value = [NSString stringWithFormat:@"%.6f", quaternionData.quaternions.q2];
+        //    NSString *q3Value = [NSString stringWithFormat:@"%.6f", quaternionData.quaternions.q3];
+        //    NSString *xPosition = [NSString stringWithFormat:@"%.02f  %@", locatorData.position.x, @"cm"];
+        //    NSString *yPosition = [NSString stringWithFormat:@"%.02f  %@", locatorData.position.y, @"cm"];
+        //    NSString *xVelocityValue = [NSString stringWithFormat:@"%.02f  %@", locatorData.velocity.x, @"cm/s"];
+        //    NSString *yVelocityValue = [NSString stringWithFormat:@"%.02f  %@", locatorData.velocity.y, @"cm/s"];
+
+        float accelVector = sqrtf(accelerometerData.acceleration.x * accelerometerData.acceleration.x +
+                                  accelerometerData.acceleration.y * accelerometerData.acceleration.y +
+                                  accelerometerData.acceleration.z * accelerometerData.acceleration.z );
+        
+        // Flipping (blue)
+        if ( fabsf(attitudeData.pitch) > 90.0  && accelVector > 0.15) {
+            // Color blue
+            [RKRGBLEDOutputCommand sendCommandWithRed:0.0 green:0.0 blue:1.0]; // Blue
+        }
+        else{
+//            self.actionLabel.text = [NSString stringWithFormat:@"not flipped"];
+        }
+        
+        // Spinning (green)
+//        if ([yawArray count] >= BACK_PACKETS){
+//            [yawArray removeObjectAtIndex:0];
+//        }
+//        [yawArray addObject:[NSNumber numberWithFloat:attitudeData.yaw]];
+//        
+//        if (!avgYawDelta) avgYawDelta = 0.0;
+//        if(!prevYaw) prevYaw = 0.0;
+//        float yawDelta = fabsf(attitudeData.yaw - prevYaw);
+//        if(yawDelta > 180.0) yawDelta = fabsf(yawDelta - 360.0);
+//        if(yawDelta > 40.0) yawDelta = 40.0;
+//        avgYawDelta = 1.0 * (avgYawDelta * 0.9); // Degrade the original
+//        avgYawDelta = (avgYawDelta*(SAMPLES_PER_SECOND-1) + yawDelta) / SAMPLES_PER_SECOND; // New
+//        //        self.actionLabel.text = [NSString stringWithFormat:@"%.0f", avgYawDelta* SAMPLES_PER_SECOND];
+//        
+//        prevYaw = attitudeData.yaw;
+        
+        // Shaking (avg accelerometer >> 1) (red)
+        NSLog([NSString stringWithFormat:@"accelVector %.2f", accelVector]);
+        
+        if ( accelVector < 0.15 ) {
+            tossingTicks--;
+            if(tossingTicks < 1){
+                [RKRGBLEDOutputCommand sendCommandWithRed:1.0 green:1.0 blue:0.0]; // Yellow
+            }
+        } else {
+            tossingTicks = TOSSING_THRESHOLD;
+        }
+        
+        if( accelVector > 1.5) {
+            shakingTicks--;
+            if(shakingTicks < 1){
+                [RKRGBLEDOutputCommand sendCommandWithRed:1.0 green:0.0 blue:0.0]; // Red
+            }
+        } else {
+            shakingTicks = SHAKING_THRESHOLD;
+        }
+        
+        //NSLog(@"(%f, %f) %f, %f, %f, %f", x, y, r, g, b, a);
+        
+    }
+}
+
 @end
 

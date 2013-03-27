@@ -13,9 +13,20 @@
 {
 	UIWindow *window_;
 	UINavigationController *navController_;
-
+    
 	CCDirectorIOS	*director_;							// weak ref
+    
+    bool robotOnline;
+    int packetCounter;
+    
+    NSMutableArray *yawArray;
+    NSMutableArray *accelArray;
+    int shakingTicks;
+    int tossingTicks;
 }
+
+-(void)setupRobotConnection;
+-(void)handleRobotOnline;
 
 @property (nonatomic, retain) UIWindow *window;
 @property (readonly) UINavigationController *navController;
