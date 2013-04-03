@@ -11,27 +11,37 @@
 #import "AppDelegate.h"
 #import "IntroLayer.h"
 #import "RobotKit/RobotKit.h"
+#import "HelloWorldLayer.h"
 
 #define TOTAL_PACKET_COUNT 200
 #define PACKET_THRESHOLD 50
 
-#define SAMPLES_PER_SECOND 10
-#define SHAKING_THRESHOLD 2
-#define TOSSING_THRESHOLD 2
+#define SAMPLES_PER_SECOND 20
+#define SHAKING_THRESHOLD 4
+#define TOSSING_THRESHOLD 3
+#define SPINNING_THRESHOLD 135
 #define COLOR_COOLDOWN 2
 
+#define FLIP 3
+#define SPIN 0
+#define SHAKE 1
+#define TOSS 2
 
 @implementation AppController
 
-@synthesize window=window_, navController=navController_, director=director_;
+@synthesize window=window_, navController=navController_, director=director_, robotOnline=robotOnline_;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    // !!!: Use the next line only during beta
+    [TestFlight setDeviceIdentifier:[[UIDevice currentDevice] uniqueIdentifier]];
+    
+    [TestFlight takeOff:@"004c4e77-dfea-4b2d-8c7c-3484ce0424b4"];
     /*Register for application lifecycle notifications so we known when to connect and disconnect from the robot*/
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillResignActive:) name:UIApplicationWillResignActiveNotification object:nil];
     
-    robotOnline = NO;
+    robotOnline_ = NO;
 
 	// Create the main window
 	window_ = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
@@ -67,8 +77,8 @@
 //	[director setProjection:kCCDirectorProjection3D];
 
 	// Enables High Res mode (Retina Display) on iPhone 4 and maintains low res on all other devices
-	if( ! [director_ enableRetinaDisplay:YES] )
-		CCLOG(@"Retina Display Not supported");
+//	if( ! [director_ enableRetinaDisplay:YES] )
+//		CCLOG(@"Retina Display Not supported");
 
 	// Default texture format for PNG/BMP/TIFF/JPEG/GIF images
 	// It can be RGBA8888, RGBA4444, RGB5_A1, RGB565
@@ -126,8 +136,9 @@
     [[RKDeviceMessenger sharedMessenger] removeDataStreamingObserver:self];
     [RKStabilizationCommand sendCommandWithState:RKStabilizationStateOn];
     [[RKRobotProvider sharedRobotProvider] closeRobotConnection];
-    robotOnline = NO;
-    
+    robotOnline_ = NO;
+    HelloWorldLayer*  h = (HelloWorldLayer*) [[[self director] runningScene] getChildByTag:443];
+    [h handleRobotOnline:robotOnline_];
     if( [navController_ visibleViewController] == director_ )
 		[director_ pause];
 }
@@ -156,6 +167,16 @@
 // application will be killed
 - (void)applicationWillTerminate:(UIApplication *)application
 {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:RKDeviceConnectionOnlineNotification object:nil];
+    [RKRGBLEDOutputCommand sendCommandWithRed:0.0 green:0.0 blue:0.0];
+    [RKSetDataStreamingCommand sendCommandWithSampleRateDivisor:0
+                                                   packetFrames:0
+                                                     sensorMask:RKDataStreamingMaskOff
+                                                    packetCount:0];
+    [[RKDeviceMessenger sharedMessenger] removeDataStreamingObserver:self];
+    [RKStabilizationCommand sendCommandWithState:RKStabilizationStateOn];
+    [[RKRobotProvider sharedRobotProvider] closeRobotConnection];
+    robotOnline_ = NO;
 	CC_DIRECTOR_END();
 }
 
@@ -182,7 +203,7 @@
 // Sphero functions
 -(void)setupRobotConnection {
     NSLog(@"setupRobotConnection");
-    robotOnline = NO;
+    robotOnline_ = NO;
     /*Try to connect to the robot*/
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRobotOnline) name:RKDeviceConnectionOnlineNotification object:nil];
     if ([[RKRobotProvider sharedRobotProvider] isRobotUnderControl]) {
@@ -192,21 +213,22 @@
 
 - (void)handleRobotOnline {
     /*The robot is now online, we can begin sending commands*/
-    if(!robotOnline) {
+    if(!robotOnline_) {
         
         [RKSetDataStreamingCommand sendCommandStopStreaming];
         // Start streaming sensor data
         ////First turn off stabilization so the drive mechanism does not move.
         [RKStabilizationCommand sendCommandWithState:RKStabilizationStateOff];
-        // Turn on the Back LED for reference
-        [RKBackLEDOutputCommand sendCommandWithBrightness:1.0f];
         
         [self sendSetDataStreamingCommand];
         
         ////Register for asynchronise data streaming packets
         [[RKDeviceMessenger sharedMessenger] addDataStreamingObserver:self selector:@selector(handleAsyncData:)];
     }
-    robotOnline = YES;
+    robotOnline_ = YES;
+    
+    HelloWorldLayer*  h = (HelloWorldLayer*) [[[self director] runningScene] getChildByTag:443];
+    [h handleRobotOnline:robotOnline_];
 }
 
 -(void)sendSetDataStreamingCommand {
@@ -238,6 +260,7 @@
                                                    packetFrames:packetFrames
                                                      sensorMask:mask
                                                     packetCount:count];
+    
     
 }
 
@@ -275,61 +298,98 @@
         //    NSString *yPosition = [NSString stringWithFormat:@"%.02f  %@", locatorData.position.y, @"cm"];
         //    NSString *xVelocityValue = [NSString stringWithFormat:@"%.02f  %@", locatorData.velocity.x, @"cm/s"];
         //    NSString *yVelocityValue = [NSString stringWithFormat:@"%.02f  %@", locatorData.velocity.y, @"cm/s"];
-
+        HelloWorldLayer*  h = (HelloWorldLayer*) [[[self director] runningScene] getChildByTag:443];
+        
         float accelVector = sqrtf(accelerometerData.acceleration.x * accelerometerData.acceleration.x +
                                   accelerometerData.acceleration.y * accelerometerData.acceleration.y +
                                   accelerometerData.acceleration.z * accelerometerData.acceleration.z );
         
         // Flipping (blue)
         if ( fabsf(attitudeData.pitch) > 90.0  && accelVector > 0.15) {
-            // Color blue
-            [RKRGBLEDOutputCommand sendCommandWithRed:0.0 green:0.0 blue:1.0]; // Blue
+            if(!isFlipped){
+                // Color blue
+                [RKRGBLEDOutputCommand sendCommandWithRed:0.0 green:0.0 blue:1.0]; // Blue
+                [h didGuess:FLIP];
+                isFlipped = YES;
+            }
         }
         else{
+            isFlipped = NO;
 //            self.actionLabel.text = [NSString stringWithFormat:@"not flipped"];
         }
         
         // Spinning (green)
-//        if ([yawArray count] >= BACK_PACKETS){
-//            [yawArray removeObjectAtIndex:0];
-//        }
-//        [yawArray addObject:[NSNumber numberWithFloat:attitudeData.yaw]];
-//        
-//        if (!avgYawDelta) avgYawDelta = 0.0;
-//        if(!prevYaw) prevYaw = 0.0;
-//        float yawDelta = fabsf(attitudeData.yaw - prevYaw);
-//        if(yawDelta > 180.0) yawDelta = fabsf(yawDelta - 360.0);
-//        if(yawDelta > 40.0) yawDelta = 40.0;
-//        avgYawDelta = 1.0 * (avgYawDelta * 0.9); // Degrade the original
-//        avgYawDelta = (avgYawDelta*(SAMPLES_PER_SECOND-1) + yawDelta) / SAMPLES_PER_SECOND; // New
-//        //        self.actionLabel.text = [NSString stringWithFormat:@"%.0f", avgYawDelta* SAMPLES_PER_SECOND];
-//        
-//        prevYaw = attitudeData.yaw;
+        // Change this to spinning around the axis that is receiving the most force
+        
+        if(!prevYaw) prevYaw = 0.0;
+        float yawDelta = attitudeData.yaw - prevYaw;
+        if(yawDelta > 180.0) yawDelta = yawDelta - 360.0;
+        if(yawDelta < -180) yawDelta = yawDelta + 360;
+        
+        if( cumulativeYaw > 0 && yawDelta > 0){
+//            cumulativeYaw += yawDelta;
+        } else if (cumulativeYaw < 0 && yawDelta < 0){
+//            cumulativeYaw += yawDelta;
+        } else {
+            cumulativeYaw = 0;
+            isSpun = NO;
+        }
+        
+        if(fabsf(attitudeData.pitch) < 60 && fabsf(attitudeData.roll) < 60) {
+            cumulativeYaw += yawDelta;
+            prevYaw = attitudeData.yaw;
+
+            if (fabsf(cumulativeYaw) > SPINNING_THRESHOLD) {
+                if(!isSpun){
+                    [RKRGBLEDOutputCommand sendCommandWithRed:0.0 green:1.0 blue:0.0]; // Green
+                    [h didGuess:SPIN];
+                    isSpun = YES;
+                }
+            }
+        
+        }
+        //        self.actionLabel.text = [NSString stringWithFormat:@"%.0f", avgYawDelta* SAMPLES_PER_SECOND];
         
         // Shaking (avg accelerometer >> 1) (red)
-        NSLog([NSString stringWithFormat:@"accelVector %.2f", accelVector]);
+//        NSLog([NSString stringWithFormat:@"accelVector %.2f", accelVector]);
+        if( accelVector > 1.5) {
+            shakingTicks--;
+            if(shakingTicks < 1){
+                if(!isShaking){
+                    [RKRGBLEDOutputCommand sendCommandWithRed:1.0 green:0.0 blue:0.0]; // Red
+                    [h didGuess:SHAKE];
+                    isShaking = YES;
+                }
+            }
+        } else {
+            shakingTicks = SHAKING_THRESHOLD;
+            isShaking = NO;
+        }
         
         if ( accelVector < 0.15 ) {
             tossingTicks--;
             if(tossingTicks < 1){
-                [RKRGBLEDOutputCommand sendCommandWithRed:1.0 green:1.0 blue:0.0]; // Yellow
+                if(!isTossing){
+                    [RKRGBLEDOutputCommand sendCommandWithRed:1.0 green:1.0 blue:0.0]; // Yellow
+                    [h didGuess:TOSS];
+                    isTossing = YES;
+                }
             }
         } else {
             tossingTicks = TOSSING_THRESHOLD;
-        }
-        
-        if( accelVector > 1.5) {
-            shakingTicks--;
-            if(shakingTicks < 1){
-                [RKRGBLEDOutputCommand sendCommandWithRed:1.0 green:0.0 blue:0.0]; // Red
-            }
-        } else {
-            shakingTicks = SHAKING_THRESHOLD;
+            isTossing = NO;
         }
         
         //NSLog(@"(%f, %f) %f, %f, %f, %f", x, y, r, g, b, a);
         
     }
+}
+
+- (void) sendLevelCommand {
+    RKSelfLevelCommandOptions options = RKSelfLevelCommandOptionStart;
+//    options = RKSelfLevelCommandOptionStart | RKSelfLevelCommandOptionKeepHeading |           RKSelfLevelCommandOptionSleepAfter | RKSelfLevelCommandOptionControlSystemOn;
+//    [RKSelfLevelCommand sendCommandWithOptions:0 angleLimit:angleLimit timeout:timeout accuracy:accuracy];
+    [RKSelfLevelCommand sendCommandWithOptions:options angleLimit:20 timeout:0.5 accuracy:0.1];
 }
 
 @end
