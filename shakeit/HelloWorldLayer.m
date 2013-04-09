@@ -123,9 +123,10 @@
         [spinAnim addChild:spinBall];
         [wheel addChild:spinAnim];
         
-        changeWheel = [CCSprite spriteWithFile:@"wheel.png"];
+        changeWheel = [CCSprite spriteWithFile:@"correct.png"];
         [gameWheel addChild:changeWheel];
         [changeWheel setPosition:ccp(0, -1* [changeWheel contentSize].height/2)];
+        [changeWheel runAction:[CCRepeatForever actionWithAction:[CCRotateBy actionWithDuration:6.0 angle:-360]]];
         
         cover = [CCSprite spriteWithFile:@"cover.png"];
         [gameWheel addChild:cover];
@@ -199,8 +200,14 @@
             shakes = 0;
             tosses = 0;
             [currentScore setString:[NSString stringWithFormat:@"%i", score ]];
-            [self nextAction];
-            
+
+            [[SimpleAudioEngine sharedEngine] playEffect:@"start.caf"];
+            [app sendLevelCommand];
+            [changeWheel setPosition:wheel.position];
+            CCCallFunc *call = [CCCallFunc actionWithTarget:self selector:@selector(nextAction)];
+            CCDelayTime *delay1 = [CCDelayTime actionWithDuration:0.4];
+            CCSequence *actionToRun = [CCSequence actions:delay1, call, nil];
+            [self runAction:actionToRun];            
         }];
         
         menuBackground = [CCSprite spriteWithFile:@"window.png"];
@@ -236,8 +243,8 @@
         [[SimpleAudioEngine sharedEngine] playBackgroundMusic:musicFile loop:NO];
     }
 
-    [changeWheel stopAllActions];
-    [changeWheel setRotation:[wheel rotation]];
+//    [changeWheel stopAllActions];
+//    [changeWheel setRotation:[wheel rotation]];
     [changeWheel setPosition:[wheel position]];
     id move1 = [CCMoveBy actionWithDuration:0.25 position:ccp(0,-1*[changeWheel contentSize].height/2)];
     id rotate1 = [CCRotateBy actionWithDuration:0.25 angle:30];
@@ -270,18 +277,23 @@
     
     
     // Announce the action
+    AppController *app = (AppController*) [[UIApplication sharedApplication] delegate];
     switch (currentAction) {
         case FLIP:
             [[SimpleAudioEngine sharedEngine] playEffect:@"flip.caf"];
+            [app setSpheroLightWithRed:0.0 green:0.0 blue:1.0]; // Blue
             break;
         case SHAKE:
             [[SimpleAudioEngine sharedEngine] playEffect:@"shake.caf"];
+            [app setSpheroLightWithRed:1.0 green:0.0 blue:0.0]; // Red
             break;
         case TOSS:
             [[SimpleAudioEngine sharedEngine] playEffect:@"toss.caf"];
+            [app setSpheroLightWithRed:1.0 green:1.0 blue:0.0]; // yellow
             break;
         case SPIN:
             [[SimpleAudioEngine sharedEngine] playEffect:@"spin.caf"];
+            [app setSpheroLightWithRed:0.0 green:1.0 blue:0.0]; // Green
             break;
         default:
             break;
@@ -316,9 +328,9 @@
 
 - (void) didGuess:(int)guess { // Called by the sphero async data
     if(guessedCorrectly) return;
-    // Make noises
-//    NSLog(@"GUESS %i currentAction %i", guess, currentAction);
+    //    NSLog(@"GUESS %i currentAction %i", guess, currentAction);
     // Play associated sound
+    // Demo mode
     switch (guess) {
         case FLIP:
             [[SimpleAudioEngine sharedEngine] playEffect:@"flip.wav"];
@@ -335,11 +347,14 @@
         default:
             break;
     }
+
     
     // Game associated stuff
     if(!gameInProgress) return;
     // If it matches
+    AppController *app = (AppController*) [[UIApplication sharedApplication] delegate];
     if(currentAction == guess){
+        
         CCSpriteFrame *burstImage = [[CCSpriteFrameCache sharedSpriteFrameCache] spriteFrameByName:@"redast.png"];
         CCParticleSystemQuad *burst = [CCParticleSystemQuad particleWithFile:@"burst.plist"];
         [burst setTexture:[burstImage texture] withRect:[burstImage rect]];
@@ -355,9 +370,12 @@
         
         [currentScore setString:[NSString stringWithFormat:@"%i", score ]];
         guessedCorrectly = YES;
-        AppController *app = (AppController*) [[UIApplication sharedApplication] delegate];
+        [app setSpheroLightWithRed:1.0 green:1.0 blue:1.0];
         [app sendLevelCommand];
+        [changeWheel runAction:[CCMoveTo actionWithDuration:0.2 position:wheel.position ]];
+        
     } else {
+        [app setSpheroLightWithRed:0.2 green:0.1 blue:0.0];
         [self endGame];
     }
 
@@ -386,6 +404,7 @@
     CGSize size = [[CCDirector sharedDirector] winSize];
 
     [menu setIsTouchEnabled:YES]; // Enable the menu
+    [menu stopAllActions];
     [menu runAction:[CCMoveTo actionWithDuration:0.6 position:ccp( size.width/2,size.height/2)]];
     [wheel runAction:[CCRepeatForever actionWithAction:[CCRotateBy actionWithDuration:8.0 angle:-360]]];
     

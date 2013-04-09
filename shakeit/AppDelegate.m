@@ -126,6 +126,7 @@
 // getting a call, pause the game
 -(void) applicationWillResignActive:(UIApplication *)application
 {
+    NSLog(@"applicationWillResignActive");
     /*When the application is entering the background we need to close the connection to the robot*/
     [[NSNotificationCenter defaultCenter] removeObserver:self name:RKDeviceConnectionOnlineNotification object:nil];
     [RKRGBLEDOutputCommand sendCommandWithRed:0.0 green:0.0 blue:0.0];
@@ -167,6 +168,7 @@
 // application will be killed
 - (void)applicationWillTerminate:(UIApplication *)application
 {
+    NSLog(@"applicationWillTerminate");
     [[NSNotificationCenter defaultCenter] removeObserver:self name:RKDeviceConnectionOnlineNotification object:nil];
     [RKRGBLEDOutputCommand sendCommandWithRed:0.0 green:0.0 blue:0.0];
     [RKSetDataStreamingCommand sendCommandWithSampleRateDivisor:0
@@ -308,7 +310,7 @@
         if ( fabsf(attitudeData.pitch) > 90.0  && accelVector > 0.15) {
             if(!isFlipped){
                 // Color blue
-                [RKRGBLEDOutputCommand sendCommandWithRed:0.0 green:0.0 blue:1.0]; // Blue
+//                [RKRGBLEDOutputCommand sendCommandWithRed:0.0 green:0.0 blue:1.0]; // Blue
                 [h didGuess:FLIP];
                 isFlipped = YES;
             }
@@ -335,13 +337,13 @@
             isSpun = NO;
         }
         
-        if(fabsf(attitudeData.pitch) < 60 && fabsf(attitudeData.roll) < 60) {
+        if(fabsf(attitudeData.pitch) < 50 && fabsf(attitudeData.roll) < 50) {
             cumulativeYaw += yawDelta;
             prevYaw = attitudeData.yaw;
 
             if (fabsf(cumulativeYaw) > SPINNING_THRESHOLD) {
                 if(!isSpun){
-                    [RKRGBLEDOutputCommand sendCommandWithRed:0.0 green:1.0 blue:0.0]; // Green
+//                    [RKRGBLEDOutputCommand sendCommandWithRed:0.0 green:1.0 blue:0.0]; // Green
                     [h didGuess:SPIN];
                     isSpun = YES;
                 }
@@ -356,7 +358,7 @@
             shakingTicks--;
             if(shakingTicks < 1){
                 if(!isShaking){
-                    [RKRGBLEDOutputCommand sendCommandWithRed:1.0 green:0.0 blue:0.0]; // Red
+//                    [RKRGBLEDOutputCommand sendCommandWithRed:1.0 green:0.0 blue:0.0]; // Red
                     [h didGuess:SHAKE];
                     isShaking = YES;
                 }
@@ -370,7 +372,7 @@
             tossingTicks--;
             if(tossingTicks < 1){
                 if(!isTossing){
-                    [RKRGBLEDOutputCommand sendCommandWithRed:1.0 green:1.0 blue:0.0]; // Yellow
+//                    [RKRGBLEDOutputCommand sendCommandWithRed:1.0 green:1.0 blue:0.0]; // Yellow
                     [h didGuess:TOSS];
                     isTossing = YES;
                 }
@@ -389,8 +391,11 @@
     RKSelfLevelCommandOptions options = RKSelfLevelCommandOptionStart;
 //    options = RKSelfLevelCommandOptionStart | RKSelfLevelCommandOptionKeepHeading |           RKSelfLevelCommandOptionSleepAfter | RKSelfLevelCommandOptionControlSystemOn;
 //    [RKSelfLevelCommand sendCommandWithOptions:0 angleLimit:angleLimit timeout:timeout accuracy:accuracy];
-    [RKSelfLevelCommand sendCommandWithOptions:options angleLimit:20 timeout:0.5 accuracy:0.1];
+    [RKSelfLevelCommand sendCommandWithOptions:options angleLimit:25 timeout:0.2 accuracy:0.1];
 }
 
+- (void) setSpheroLightWithRed:(float)red green:(float)green blue:(float)blue {
+    [RKRGBLEDOutputCommand sendCommandWithRed:red green:green blue:blue];
+}
 @end
 

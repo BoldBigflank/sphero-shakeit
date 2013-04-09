@@ -34,6 +34,7 @@
 -(void)setupRobotConnection;
 -(void)handleRobotOnline;
 -(void)sendLevelCommand;
+-(void) setSpheroLightWithRed:(float)red green:(float)green blue:(float)blue;
 
 @property (nonatomic, retain) UIWindow *window;
 @property (readonly) UINavigationController *navController;
