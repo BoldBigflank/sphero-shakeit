@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "FAB8D8DE16FFA25B00A7DDCD"
-               BuildableName = "shakeit.app"
+               BuildableName = "Sphero Shake It.app"
                BlueprintName = "shakeit"
                ReferencedContainer = "container:shakeit.xcodeproj">
             </BuildableReference>
@@ -33,7 +33,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "FAB8D8DE16FFA25B00A7DDCD"
-            BuildableName = "shakeit.app"
+            BuildableName = "Sphero Shake It.app"
             BlueprintName = "shakeit"
             ReferencedContainer = "container:shakeit.xcodeproj">
          </BuildableReference>
@@ -52,7 +52,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "FAB8D8DE16FFA25B00A7DDCD"
-            BuildableName = "shakeit.app"
+            BuildableName = "Sphero Shake It.app"
             BlueprintName = "shakeit"
             ReferencedContainer = "container:shakeit.xcodeproj">
          </BuildableReference>
@@ -70,7 +70,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "FAB8D8DE16FFA25B00A7DDCD"
-            BuildableName = "shakeit.app"
+            BuildableName = "Sphero Shake It.app"
             BlueprintName = "shakeit"
             ReferencedContainer = "container:shakeit.xcodeproj">
          </BuildableReference>
